@@ -68,5 +68,10 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 1** — rules engine (`src/engine`): board + ASCII parser, move
+  generation for all six pieces, blocked squares, promotion, win/loss/draw
+  resolution, the enemy double-move modifier. 53 unit tests.
+  Status precedence is: king captured > missing king > side to move has no
+  legal move (that side loses) > move limit reached (draw).
 - **Phase 0** — scaffold, lint/format/test tooling, PWA config, icons, seeded
   PRNG, safe localStorage wrapper, this file.
