@@ -68,6 +68,18 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 5** — levels. `difficulty.ts` holds one function per lever (board
+  size, AI depth, mistake chance, move limit, move timer, blocked squares,
+  double-move modifier, enemy budget, player army, enemy piece pool) and is the
+  single source of the curve. `handTuned.ts` is levels 1-30 as board diagrams;
+  `generator.ts` covers 31+ by spending the enemy budget on a seeded board;
+  `validate.ts` gates every level (two kings, legal board size, no pawn on its
+  own promotion rank, the player has a move, and at least one player move
+  avoids losing the king on the reply). Warnings — winnable on move 1, or the
+  player starting under attack — make the generator retry. `getLevel` is the
+  only entry point and applies meta upgrades. The dev-only preview screen
+  (`DevScreen`, linked from Home in dev builds) plays any level on any seed.
+  Per-move timers arrived here too: expiry plays a random legal move.
 - **Phase 4** — progression. `src/state/run.ts` holds the pure run rules
   (checkpoints at 1, 6, 11, ...; loss = -1 heart and -1 level but never below
   the checkpoint; draw = free replay; Crowns = `level * 2 + 10 * floor(level/10)`).

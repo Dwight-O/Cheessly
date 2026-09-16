@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import DevScreen from './screens/DevScreen';
 import GameScreen from './screens/GameScreen';
 import HomeScreen from './screens/HomeScreen';
 import RunEndScreen from './screens/RunEndScreen';
@@ -18,6 +19,8 @@ export default function App() {
       return <GameScreen />;
     case 'runEnd':
       return <RunEndScreen />;
+    case 'dev':
+      return <DevScreen />;
     default:
       return <HomeScreen />;
   }

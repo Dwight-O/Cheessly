@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
 import Board from '../components/Board';
 import Hud from '../components/Hud';
+import MoveTimer from '../components/MoveTimer';
 import { movesLeft } from '../../engine';
+import { useAppStore } from '../../state/appStore';
 import { advanceAfterLevel, quitToHome } from '../../state/flow';
 import { useGameStore } from '../../state/gameStore';
 import { useRunStore } from '../../state/runStore';
@@ -19,6 +21,9 @@ export default function GameScreen() {
   const selected = useGameStore((s) => s.selected);
   const targets = useGameStore((s) => s.targets);
   const enemyThinking = useGameStore((s) => s.enemyThinking);
+  const mode = useGameStore((s) => s.mode);
+  const playTimeoutMove = useGameStore((s) => s.playTimeoutMove);
+  const go = useAppStore((s) => s.go);
   const tapSquare = useGameStore((s) => s.tapSquare);
   const playEnemyTurn = useGameStore((s) => s.playEnemyTurn);
   const run = useRunStore((s) => s.run);
@@ -33,6 +38,8 @@ export default function GameScreen() {
   const remaining = movesLeft(game);
   const over = game.status !== 'playing';
   const result = over ? RESULT[game.status as keyof typeof RESULT] : null;
+  const playerToMove = !over && game.turn === 'w' && !enemyThinking;
+  const onContinue = () => (mode === 'preview' ? go('dev') : advanceAfterLevel(game.status));
 
   return (
     <div className={styles.screen}>
@@ -51,12 +58,21 @@ export default function GameScreen() {
         <span>{remaining !== null ? `${remaining} moves left` : ''}</span>
       </div>
 
+      {level.moveTimerSeconds !== undefined && (
+        <MoveTimer
+          seconds={level.moveTimerSeconds}
+          turnKey={game.ply}
+          active={playerToMove}
+          onExpire={playTimeoutMove}
+        />
+      )}
+
       <div className={styles.boardArea}>
         <Board
           game={game}
           selected={selected}
           targets={targets}
-          interactive={!over && game.turn === 'w' && !enemyThinking}
+          interactive={playerToMove}
           onTapSquare={tapSquare}
         />
         {result && (
@@ -64,12 +80,8 @@ export default function GameScreen() {
             <div className={styles.overlayInner}>
               <h2>{result.title}</h2>
               <p>{result.body}</p>
-              <button
-                type="button"
-                className={styles.primary}
-                onClick={() => advanceAfterLevel(game.status)}
-              >
-                {result.cta}
+              <button type="button" className={styles.primary} onClick={onContinue}>
+                {mode === 'preview' ? 'Back to preview' : result.cta}
               </button>
             </div>
           </div>

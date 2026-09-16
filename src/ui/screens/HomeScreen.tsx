@@ -55,6 +55,11 @@ export default function HomeScreen() {
             Upgrades
           </button>
         </div>
+        {import.meta.env.DEV && (
+          <button type="button" className={ui.secondary} onClick={() => go('dev')}>
+            Level preview (dev)
+          </button>
+        )}
       </div>
     </div>
   );

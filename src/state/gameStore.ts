@@ -4,10 +4,16 @@ import type { GameState, Move, Square } from '../engine';
 import { levelToGame } from '../levels/types';
 import type { LevelConfig } from '../levels/types';
 import { requestEnemyMove } from '../ai/client';
+import { randomMove } from '../ai/random';
+import { createRng } from '../util/prng';
+
+/** Where the level came from, which decides what "continue" does. */
+export type GameMode = 'run' | 'daily' | 'preview';
 
 interface GameStore {
   level: LevelConfig | null;
   game: GameState | null;
+  mode: GameMode;
   /** The square the player has tapped, if any. */
   selected: Square | null;
   /** Legal moves from `selected`, used to highlight targets. */
@@ -15,18 +21,21 @@ interface GameStore {
   enemyThinking: boolean;
   seed: number;
 
-  startLevel(level: LevelConfig, seed: number): void;
+  startLevel(level: LevelConfig, seed: number, mode?: GameMode): void;
   tapSquare(square: Square): void;
   clearSelection(): void;
   /** Plays one enemy move. The UI calls this whenever it is the enemy's turn. */
   playEnemyTurn(): Promise<void>;
   /** Plays a move for the player; used by the move timer and by tapSquare. */
   playPlayerMove(move: Move): void;
+  /** The per-move timer expired: play a random legal move for the player. */
+  playTimeoutMove(): void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
   level: null,
   game: null,
+  mode: 'run',
   selected: null,
   targets: [],
   enemyThinking: false,
@@ -51,6 +60,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const { game } = get();
     if (!game || game.status !== 'playing' || game.turn !== 'w') return;
     set({ game: applyMove(game, move), selected: null, targets: [] });
+  },
+
+  playTimeoutMove() {
+    const { game, seed } = get();
+    if (!game || game.status !== 'playing' || game.turn !== 'w') return;
+    const move = randomMove(game.board, 'w', createRng(`timeout:${seed}:${game.ply}`));
+    if (move) get().playPlayerMove(move);
   },
 
   tapSquare(square) {
