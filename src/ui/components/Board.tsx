@@ -35,7 +35,7 @@ export default function Board({ game, selected, targets, interactive, onTapSquar
 
   return (
     <div className={styles.wrap} style={style}>
-      <div className={styles.grid} role="grid" aria-label="Game board">
+      <div className={styles.grid} role="group" aria-label="Game board">
         {squares.map((square) => {
           const x = squareX(board, square);
           const y = squareY(board, square);
@@ -67,19 +67,40 @@ export default function Board({ game, selected, targets, interactive, onTapSquar
           if (!piece) return null;
           const x = squareX(board, square);
           const y = squareY(board, square);
+          const moved = game.lastMove?.to === square;
+          // The piece that just moved is keyed by ply so React remounts it and
+          // the slide-in animation replays from its origin square.
           return (
             <div
-              key={square}
-              className={styles.piece}
-              style={{
-                left: `calc(${x} * 100% / var(--cols))`,
-                top: `calc(${y} * 100% / var(--rows))`,
-              }}
+              key={moved ? `${square}:${game.ply}` : square}
+              className={`${styles.piece} ${moved ? styles.moving : ''}`}
+              style={
+                {
+                  left: `calc(${x} * 100% / var(--cols))`,
+                  top: `calc(${y} * 100% / var(--rows))`,
+                  ...(moved && game.lastMove
+                    ? {
+                        '--dx': `${squareX(board, game.lastMove.from) - x}00%`,
+                        '--dy': `${squareY(board, game.lastMove.from) - y}00%`,
+                      }
+                    : {}),
+                } as React.CSSProperties
+              }
             >
               <PieceToken piece={piece} />
             </div>
           );
         })}
+        {game.lastMove?.captured && (
+          <div
+            key={`capture:${game.ply}`}
+            className={`${styles.piece} ${styles.captureBurst}`}
+            style={{
+              left: `calc(${squareX(board, game.lastMove.to)} * 100% / var(--cols))`,
+              top: `calc(${squareY(board, game.lastMove.to)} * 100% / var(--rows))`,
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -68,6 +68,14 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 8** — polish. The moved piece is keyed by ply so React remounts it
+  and replays a 180 ms slide from its origin square; captures add a short ring
+  burst; `prefers-reduced-motion` disables both. Sound is synthesised with
+  WebAudio (no audio files to ship or cache) and starts only from a tap, since
+  browsers refuse an AudioContext before a gesture; haptics use
+  `navigator.vibrate`. Both channels fail silently and have mute toggles on the
+  Home screen. The three-step tutorial shows once and is recorded in the
+  profile. The service worker is registered from `main.tsx`.
 - **Phase 7** — meta upgrades. `state/upgrades.ts` holds the catalogue as data
   (extra heart x2, extra knight, undo, closer checkpoints) plus the pure
   purchase rules. Every upgrade carries an `allowancePerLevel` that is added to

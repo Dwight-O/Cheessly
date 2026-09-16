@@ -1,3 +1,4 @@
+import SettingsToggles from '../components/SettingsToggles';
 import ShareButton from '../components/ShareButton';
 import { runShareText } from '../../util/share';
 import { useAppStore } from '../../state/appStore';
@@ -61,6 +62,7 @@ export default function HomeScreen() {
             Upgrades
           </button>
         </div>
+        <SettingsToggles />
         {import.meta.env.DEV && (
           <button type="button" className={ui.secondary} onClick={() => go('dev')}>
             Level preview (dev)
