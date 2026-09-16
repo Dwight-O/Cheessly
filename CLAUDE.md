@@ -68,6 +68,10 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 2** — board UI. Squares are buttons with ARIA labels; pieces are SVG
+  tokens in an absolutely positioned layer (so phase 8 can animate them).
+  `src/state/gameStore.ts` holds selection and turn flow; `src/ai/client.ts` is
+  the seam the Web Worker slots into in phase 3. One hard-coded level.
 - **Phase 1** — rules engine (`src/engine`): board + ASCII parser, move
   generation for all six pieces, blocked squares, promotion, win/loss/draw
   resolution, the enemy double-move modifier. 53 unit tests.
