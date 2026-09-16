@@ -4,6 +4,7 @@ import DevScreen from './screens/DevScreen';
 import GameScreen from './screens/GameScreen';
 import HomeScreen from './screens/HomeScreen';
 import RunEndScreen from './screens/RunEndScreen';
+import UpgradesScreen from './screens/UpgradesScreen';
 import { useAppStore } from '../state/appStore';
 import { useDailyStore } from '../state/dailyStore';
 import { useRunStore } from '../state/runStore';
@@ -25,6 +26,8 @@ export default function App() {
       return <RunEndScreen />;
     case 'daily':
       return <DailyScreen />;
+    case 'upgrades':
+      return <UpgradesScreen />;
     case 'dev':
       return <DevScreen />;
     default:

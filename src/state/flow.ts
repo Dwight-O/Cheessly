@@ -5,12 +5,14 @@ import { dailyLevels, DAILY_LEVEL_COUNT, todayUtc } from './daily';
 import { useDailyStore } from './dailyStore';
 import { useGameStore } from './gameStore';
 import { useRunStore } from './runStore';
+import { levelOptionsFor } from './upgrades';
 
 /** Loads the level the run is currently on and shows the board. */
 export function openCurrentLevel(): void {
-  const { run } = useRunStore.getState();
+  const { run, profile } = useRunStore.getState();
   if (!run) return;
-  useGameStore.getState().startLevel(getLevel(run.level, run.seed), run.seed);
+  const level = getLevel(run.level, run.seed, levelOptionsFor(profile));
+  useGameStore.getState().startLevel(level, run.seed);
   useAppStore.getState().go('game');
 }
 
@@ -31,6 +33,19 @@ export function advanceAfterLevel(status: GameStatus): void {
     return;
   }
   openCurrentLevel();
+}
+
+/**
+ * Spends one of the run's undos to take back the player's last move (and the
+ * enemy's reply). Only available while the level is still in play: an undo is
+ * a fix for a mis-tap, not a revive after the king has fallen.
+ */
+export function undoMove(): boolean {
+  const game = useGameStore.getState();
+  if (!game.canUndo()) return false;
+  if (!useRunStore.getState().consumeUndo()) return false;
+  game.undo();
+  return true;
 }
 
 export function quitToHome(): void {

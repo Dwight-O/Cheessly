@@ -4,7 +4,7 @@ import Hud from '../components/Hud';
 import MoveTimer from '../components/MoveTimer';
 import { movesLeft } from '../../engine';
 import { useAppStore } from '../../state/appStore';
-import { advanceAfterLevel, advanceDaily, quitToHome } from '../../state/flow';
+import { advanceAfterLevel, advanceDaily, quitToHome, undoMove } from '../../state/flow';
 import { useGameStore } from '../../state/gameStore';
 import { useRunStore } from '../../state/runStore';
 import styles from './GameScreen.module.css';
@@ -23,6 +23,7 @@ export default function GameScreen() {
   const enemyThinking = useGameStore((s) => s.enemyThinking);
   const mode = useGameStore((s) => s.mode);
   const playTimeoutMove = useGameStore((s) => s.playTimeoutMove);
+  const history = useGameStore((s) => s.history);
   const go = useAppStore((s) => s.go);
   const tapSquare = useGameStore((s) => s.tapSquare);
   const playEnemyTurn = useGameStore((s) => s.playEnemyTurn);
@@ -73,6 +74,17 @@ export default function GameScreen() {
         </span>
         <span>{remaining !== null ? `${remaining} moves left` : ''}</span>
       </div>
+
+      {mode === 'run' && run && run.undosLeft > 0 && (
+        <button
+          type="button"
+          className={styles.undo}
+          disabled={history.length === 0 || !playerToMove}
+          onClick={() => undoMove()}
+        >
+          Undo ({run.undosLeft})
+        </button>
+      )}
 
       {level.moveTimerSeconds !== undefined && (
         <MoveTimer

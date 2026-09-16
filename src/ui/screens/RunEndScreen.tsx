@@ -49,6 +49,9 @@ export default function RunEndScreen() {
           Run again
         </button>
         <ShareButton text={runShareText(summary.highest, 0, summary.maxHearts)} label="Share run" />
+        <button type="button" className={ui.secondary} onClick={() => go('upgrades')}>
+          Spend Crowns
+        </button>
         <button type="button" className={ui.secondary} onClick={() => go('home')}>
           Home
         </button>

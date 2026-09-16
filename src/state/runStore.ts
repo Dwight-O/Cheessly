@@ -13,6 +13,8 @@ import {
   saveRun,
 } from './run';
 import type { RunState } from './run';
+import { purchase, runOptionsFor } from './upgrades';
+import type { UpgradeId } from './upgrades';
 
 export interface RunSummary {
   highest: number;
@@ -42,6 +44,10 @@ interface RunStore {
   updateSettings(patch: Partial<Settings>): void;
   markTutorialSeen(): void;
   addCrowns(amount: number): void;
+  /** Spends Crowns on a meta upgrade. Returns false if it was not affordable. */
+  buyUpgrade(id: UpgradeId): boolean;
+  /** Spends one of the run's undos. Returns false when none are left. */
+  consumeUndo(): boolean;
 }
 
 function persist(run: RunState | null, profile: Profile) {
@@ -143,9 +149,23 @@ export const useRunStore = create<RunStore>((set, get) => ({
     set({ profile });
     saveProfile(profile);
   },
+
+  buyUpgrade(id) {
+    const result = purchase(get().profile, id);
+    if (!result.ok) return false;
+    set({ profile: result.profile });
+    saveProfile(result.profile);
+    return true;
+  },
+
+  consumeUndo() {
+    const { run, profile } = get();
+    if (!run || run.undosLeft <= 0) return false;
+    const next = { ...run, undosLeft: run.undosLeft - 1 };
+    set({ run: next });
+    persist(next, profile);
+    return true;
+  },
 }));
 
-/** Meta upgrades change the starting run; phase 7 fills this in. */
-function runOptionsFromProfile(_profile: Profile): Partial<RunState> {
-  return {};
-}
+const runOptionsFromProfile = runOptionsFor;

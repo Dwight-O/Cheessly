@@ -17,6 +17,14 @@ const store = () => useGameStore.getState();
 describe('gameStore', () => {
   beforeEach(() => store().startLevel(LEVEL, 1));
 
+  it('records the mode the level was started in', () => {
+    expect(store().mode).toBe('run');
+    store().startLevel(LEVEL, 1, 'preview');
+    expect(store().mode).toBe('preview');
+    store().startLevel(LEVEL, 1, 'daily');
+    expect(store().mode).toBe('daily');
+  });
+
   it('starts a level with the player to move', () => {
     expect(store().game?.turn).toBe('w');
     expect(store().selected).toBeNull();

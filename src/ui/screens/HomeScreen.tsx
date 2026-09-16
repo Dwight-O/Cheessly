@@ -57,7 +57,7 @@ export default function HomeScreen() {
           <button type="button" className={ui.secondary} onClick={() => go('daily')}>
             Daily
           </button>
-          <button type="button" className={ui.secondary} onClick={() => go('upgrades')} disabled>
+          <button type="button" className={ui.secondary} onClick={() => go('upgrades')}>
             Upgrades
           </button>
         </div>

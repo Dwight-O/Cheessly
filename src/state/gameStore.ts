@@ -14,6 +14,8 @@ interface GameStore {
   level: LevelConfig | null;
   game: GameState | null;
   mode: GameMode;
+  /** Positions before each of the player's moves, for the Undo upgrade. */
+  history: GameState[];
   /** The square the player has tapped, if any. */
   selected: Square | null;
   /** Legal moves from `selected`, used to highlight targets. */
@@ -30,21 +32,28 @@ interface GameStore {
   playPlayerMove(move: Move): void;
   /** The per-move timer expired: play a random legal move for the player. */
   playTimeoutMove(): void;
+  /** True when there is a player move to take back right now. */
+  canUndo(): boolean;
+  /** Takes back the player's last move and the enemy's reply. */
+  undo(): void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
   level: null,
   game: null,
   mode: 'run',
+  history: [],
   selected: null,
   targets: [],
   enemyThinking: false,
   seed: 0,
 
-  startLevel(level, seed) {
+  startLevel(level, seed, mode = 'run') {
     set({
       level,
       game: levelToGame(level),
+      mode,
+      history: [],
       selected: null,
       targets: [],
       enemyThinking: false,
@@ -57,9 +66,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
   },
 
   playPlayerMove(move) {
-    const { game } = get();
+    const { game, history } = get();
     if (!game || game.status !== 'playing' || game.turn !== 'w') return;
-    set({ game: applyMove(game, move), selected: null, targets: [] });
+    set({
+      game: applyMove(game, move),
+      history: [...history, game],
+      selected: null,
+      targets: [],
+    });
+  },
+
+  canUndo() {
+    const { game, history, enemyThinking } = get();
+    return history.length > 0 && !enemyThinking && game !== null && game.status === 'playing';
+  },
+
+  undo() {
+    const { history } = get();
+    const previous = history[history.length - 1];
+    if (!previous) return;
+    set({
+      game: previous,
+      history: history.slice(0, -1),
+      selected: null,
+      targets: [],
+    });
   },
 
   playTimeoutMove() {

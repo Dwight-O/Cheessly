@@ -68,6 +68,12 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 7** — meta upgrades. `state/upgrades.ts` holds the catalogue as data
+  (extra heart x2, extra knight, undo, closer checkpoints) plus the pure
+  purchase rules. Every upgrade carries an `allowancePerLevel` that is added to
+  the generator's enemy budget, which is how the ladder stays a climb after the
+  player has spent Crowns. Undo is deliberately a mis-tap fix, not a revive: it
+  is only available while the level is still in play.
 - **Phase 6** — daily challenge and share cards. `state/daily.ts` is pure:
   the UTC date is the seed, the five levels come from the generator (never the
   hand-tuned set, and never touched by meta upgrades) so everyone plays the
