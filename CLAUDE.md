@@ -68,6 +68,15 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 3** — AI. `src/ai/evaluate.ts` (material + 0.05/move mobility),
+  `src/ai/search.ts` (alpha-beta with iterative deepening, MVV-LVA ordering and
+  a hard 500 ms wall-clock cap), `src/ai/worker.ts` + `client.ts` (Web Worker
+  with a main-thread fallback and a 260 ms minimum "thinking" delay).
+  Search is written as explicit max/min rather than negamax because the
+  double-move modifier means the side to move does not always alternate.
+  Measured in this container: depth 4 from a full 8x8 start position is ~80 ms
+  and ~720 interior nodes, so depth 4 fits the 500 ms budget with headroom;
+  slower devices degrade automatically because only completed iterations count.
 - **Phase 2** — board UI. Squares are buttons with ARIA labels; pieces are SVG
   tokens in an absolutely positioned layer (so phase 8 can animate them).
   `src/state/gameStore.ts` holds selection and turn flow; `src/ai/client.ts` is
