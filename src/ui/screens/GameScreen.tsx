@@ -1,21 +1,19 @@
 import { useEffect } from 'react';
 import Board from '../components/Board';
+import Hud from '../components/Hud';
 import { movesLeft } from '../../engine';
+import { advanceAfterLevel, quitToHome } from '../../state/flow';
 import { useGameStore } from '../../state/gameStore';
+import { useRunStore } from '../../state/runStore';
 import styles from './GameScreen.module.css';
 
-const RESULT_TEXT = {
-  'player-win': { title: 'Level cleared', body: 'You captured the enemy king.' },
-  'player-loss': { title: 'Defeated', body: 'Your king fell.' },
-  draw: { title: 'Out of moves', body: 'Nobody captured a king. Replay, no penalty.' },
+const RESULT = {
+  'player-win': { title: 'Level cleared', body: 'You captured the enemy king.', cta: 'Next level' },
+  'player-loss': { title: 'Defeated', body: 'You lose a heart and drop a level.', cta: 'Continue' },
+  draw: { title: 'Out of moves', body: 'A draw. Replay this level, no penalty.', cta: 'Replay' },
 } as const;
 
-interface GameScreenProps {
-  /** What the button under the result overlay does. */
-  onContinue: () => void;
-}
-
-export default function GameScreen({ onContinue }: GameScreenProps) {
+export default function GameScreen() {
   const level = useGameStore((s) => s.level);
   const game = useGameStore((s) => s.game);
   const selected = useGameStore((s) => s.selected);
@@ -23,6 +21,8 @@ export default function GameScreen({ onContinue }: GameScreenProps) {
   const enemyThinking = useGameStore((s) => s.enemyThinking);
   const tapSquare = useGameStore((s) => s.tapSquare);
   const playEnemyTurn = useGameStore((s) => s.playEnemyTurn);
+  const run = useRunStore((s) => s.run);
+  const profile = useRunStore((s) => s.profile);
 
   useEffect(() => {
     if (game && game.status === 'playing' && game.turn === 'b') void playEnemyTurn();
@@ -32,20 +32,20 @@ export default function GameScreen({ onContinue }: GameScreenProps) {
 
   const remaining = movesLeft(game);
   const over = game.status !== 'playing';
-  const result = over ? RESULT_TEXT[game.status as keyof typeof RESULT_TEXT] : null;
+  const result = over ? RESULT[game.status as keyof typeof RESULT] : null;
 
   return (
     <div className={styles.screen}>
+      {run && <Hud run={run} profile={profile} onQuit={quitToHome} />}
+
       <header>
-        <h1 className={styles.title}>
-          Level {level.index} — {level.name}
-        </h1>
+        <h1 className={styles.title}>{level.name}</h1>
         {level.note && <p className={styles.note}>{level.note}</p>}
       </header>
 
       <div className={styles.status} aria-live="polite">
         <span>
-          {over ? '' : game.turn === 'w' ? 'Your move' : ''}
+          {over ? '' : game.turn === 'w' ? 'Your move' : null}
           {!over && game.turn === 'b' && <span className={styles.thinking}>Enemy thinking</span>}
         </span>
         <span>{remaining !== null ? `${remaining} moves left` : ''}</span>
@@ -64,8 +64,12 @@ export default function GameScreen({ onContinue }: GameScreenProps) {
             <div className={styles.overlayInner}>
               <h2>{result.title}</h2>
               <p>{result.body}</p>
-              <button type="button" className={styles.primary} onClick={onContinue}>
-                {game.status === 'player-win' ? 'Next level' : 'Continue'}
+              <button
+                type="button"
+                className={styles.primary}
+                onClick={() => advanceAfterLevel(game.status)}
+              >
+                {result.cta}
               </button>
             </div>
           </div>

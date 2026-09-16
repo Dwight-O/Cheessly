@@ -1,25 +1,24 @@
 import { useEffect } from 'react';
 import GameScreen from './screens/GameScreen';
-import { useGameStore } from '../state/gameStore';
-import type { LevelConfig } from '../levels/types';
-
-/** Phase 2: one hard-coded level so the board and the loop can be played. */
-const LEVEL_ONE: LevelConfig = {
-  index: 1,
-  name: 'First Step',
-  rows: ['.k..', '....', '....', 'K.Q.'],
-  aiDepth: 0,
-  mistakeChance: 0.3,
-  isBoss: false,
-  note: 'Tap a piece, then tap a highlighted square. Capture the enemy king.',
-};
+import HomeScreen from './screens/HomeScreen';
+import RunEndScreen from './screens/RunEndScreen';
+import { useAppStore } from '../state/appStore';
+import { useRunStore } from '../state/runStore';
 
 export default function App() {
-  const startLevel = useGameStore((s) => s.startLevel);
+  const screen = useAppStore((s) => s.screen);
+  const hydrate = useRunStore((s) => s.hydrate);
 
   useEffect(() => {
-    startLevel(LEVEL_ONE, 1);
-  }, [startLevel]);
+    hydrate();
+  }, [hydrate]);
 
-  return <GameScreen onContinue={() => startLevel(LEVEL_ONE, Date.now() >>> 0)} />;
+  switch (screen) {
+    case 'game':
+      return <GameScreen />;
+    case 'runEnd':
+      return <RunEndScreen />;
+    default:
+      return <HomeScreen />;
+  }
 }

@@ -68,6 +68,12 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 4** — progression. `src/state/run.ts` holds the pure run rules
+  (checkpoints at 1, 6, 11, ...; loss = -1 heart and -1 level but never below
+  the checkpoint; draw = free replay; Crowns = `level * 2 + 10 * floor(level/10)`).
+  `runStore` owns the run and the persisted profile, `flow.ts` co-ordinates the
+  run store, the game store and the screen router. Every save goes through the
+  try/catch storage wrapper, so blocked storage degrades to a session-only game.
 - **Phase 3** — AI. `src/ai/evaluate.ts` (material + 0.05/move mobility),
   `src/ai/search.ts` (alpha-beta with iterative deepening, MVV-LVA ordering and
   a hard 500 ms wall-clock cap), `src/ai/worker.ts` + `client.ts` (Web Worker
