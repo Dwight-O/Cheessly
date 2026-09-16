@@ -1,3 +1,5 @@
+import ShareButton from '../components/ShareButton';
+import { runShareText } from '../../util/share';
 import { useAppStore } from '../../state/appStore';
 import { startNewRun } from '../../state/flow';
 import { useRunStore } from '../../state/runStore';
@@ -46,6 +48,7 @@ export default function RunEndScreen() {
         <button type="button" className={ui.primary} onClick={() => startNewRun()}>
           Run again
         </button>
+        <ShareButton text={runShareText(summary.highest, 0, summary.maxHearts)} label="Share run" />
         <button type="button" className={ui.secondary} onClick={() => go('home')}>
           Home
         </button>

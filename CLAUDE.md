@@ -68,6 +68,13 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 6** — daily challenge and share cards. `state/daily.ts` is pure:
+  the UTC date is the seed, the five levels come from the generator (never the
+  hand-tuned set, and never touched by meta upgrades) so everyone plays the
+  same boards, results are kept per date so one attempt cannot be retried, and
+  the streak advances only when the fifth level lands on a consecutive date.
+  `util/share.ts` builds both cards and shares via the Web Share API with a
+  clipboard fallback.
 - **Phase 5** — levels. `difficulty.ts` holds one function per lever (board
   size, AI depth, mistake chance, move limit, move timer, blocked squares,
   double-move modifier, enemy budget, player army, enemy piece pool) and is the

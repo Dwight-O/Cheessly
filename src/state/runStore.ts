@@ -18,6 +18,7 @@ export interface RunSummary {
   highest: number;
   streak: number;
   crowns: number;
+  maxHearts: number;
   newBest: boolean;
 }
 
@@ -108,6 +109,7 @@ export const useRunStore = create<RunStore>((set, get) => ({
         highest: next.highest,
         streak: run.streak,
         crowns,
+        maxHearts: next.maxHearts,
         newBest: next.highest > profile.bestLevel,
       },
     });

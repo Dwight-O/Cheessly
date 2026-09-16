@@ -4,7 +4,7 @@ import Hud from '../components/Hud';
 import MoveTimer from '../components/MoveTimer';
 import { movesLeft } from '../../engine';
 import { useAppStore } from '../../state/appStore';
-import { advanceAfterLevel, quitToHome } from '../../state/flow';
+import { advanceAfterLevel, advanceDaily, quitToHome } from '../../state/flow';
 import { useGameStore } from '../../state/gameStore';
 import { useRunStore } from '../../state/runStore';
 import styles from './GameScreen.module.css';
@@ -39,11 +39,27 @@ export default function GameScreen() {
   const over = game.status !== 'playing';
   const result = over ? RESULT[game.status as keyof typeof RESULT] : null;
   const playerToMove = !over && game.turn === 'w' && !enemyThinking;
-  const onContinue = () => (mode === 'preview' ? go('dev') : advanceAfterLevel(game.status));
+  const onContinue = () => {
+    if (mode === 'preview') go('dev');
+    else if (mode === 'daily') advanceDaily(game.status);
+    else advanceAfterLevel(game.status);
+  };
 
   return (
     <div className={styles.screen}>
-      {run && <Hud run={run} profile={profile} onQuit={quitToHome} />}
+      {mode === 'run' && run && <Hud run={run} profile={profile} onQuit={quitToHome} />}
+      {mode !== 'run' && (
+        <div className={styles.status}>
+          <span>{mode === 'daily' ? 'Daily challenge' : 'Level preview'}</span>
+          <button
+            type="button"
+            className={styles.quit}
+            onClick={() => go(mode === 'daily' ? 'daily' : 'dev')}
+          >
+            Back
+          </button>
+        </div>
+      )}
 
       <header>
         <h1 className={styles.title}>{level.name}</h1>

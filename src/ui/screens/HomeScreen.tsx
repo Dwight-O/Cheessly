@@ -1,3 +1,5 @@
+import ShareButton from '../components/ShareButton';
+import { runShareText } from '../../util/share';
 import { useAppStore } from '../../state/appStore';
 import { openCurrentLevel, startNewRun } from '../../state/flow';
 import { useRunStore } from '../../state/runStore';
@@ -41,6 +43,10 @@ export default function HomeScreen() {
             <button type="button" className={ui.secondary} onClick={() => startNewRun()}>
               New run
             </button>
+            <ShareButton
+              text={runShareText(run.highest, run.hearts, run.maxHearts)}
+              label="Share progress"
+            />
           </>
         ) : (
           <button type="button" className={ui.primary} onClick={() => startNewRun()}>
@@ -48,7 +54,7 @@ export default function HomeScreen() {
           </button>
         )}
         <div className={ui.linkRow}>
-          <button type="button" className={ui.secondary} onClick={() => go('daily')} disabled>
+          <button type="button" className={ui.secondary} onClick={() => go('daily')}>
             Daily
           </button>
           <button type="button" className={ui.secondary} onClick={() => go('upgrades')} disabled>

@@ -90,3 +90,12 @@
 .primary:active {
   transform: translateY(1px);
 }
+
+.quit {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  padding: 0 12px;
+  font-size: 0.8rem;
+}
