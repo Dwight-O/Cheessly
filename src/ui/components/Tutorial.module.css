@@ -1,0 +1,47 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(9 11 15 / 88%);
+  z-index: 10;
+}
+
+.card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+}
+
+.counter {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.title {
+  margin: 6px 0 8px;
+  font-size: 1.4rem;
+}
+
+.body {
+  margin: 0 0 18px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+.skip {
+  margin-top: 10px;
+  background: none;
+  border: 0;
+  color: var(--text-dim);
+  text-decoration: underline;
+  min-height: 44px;
+}

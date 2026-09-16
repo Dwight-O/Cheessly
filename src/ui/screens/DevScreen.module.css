@@ -1,0 +1,64 @@
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.row label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  min-width: 46px;
+}
+
+.input {
+  flex: 1;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  padding: 0 10px;
+  font: inherit;
+}
+
+.step {
+  min-width: 44px;
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.table th {
+  color: var(--text-dim);
+  font-weight: 500;
+  width: 45%;
+}
+
+.ok {
+  color: var(--move);
+}
+
+.bad {
+  color: var(--danger);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  white-space: pre;
+  color: var(--text-dim);
+}

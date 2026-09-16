@@ -1,0 +1,77 @@
+/*
+ * Global theme tokens. Everything else uses CSS Modules.
+ * Palette is colour-blind safe: the player/enemy distinction relies on a
+ * light/dark value contrast plus different piece outlines, never hue alone.
+ */
+:root {
+  --bg: #12151c;
+  --bg-elev: #1b2029;
+  --bg-elev-2: #242b37;
+  --line: #333c4b;
+  --text: #eef2f8;
+  --text-dim: #9aa6b8;
+
+  --gold: #e8c25a;
+  --player: #f2f4f8; /* light pieces  */
+  --player-ink: #10131a;
+  --enemy: #151b26; /* dark pieces   */
+  --enemy-ink: #e9edf5;
+
+  --sq-light: #46506a;
+  --sq-dark: #38415a;
+  --sq-blocked: #171b24;
+  --select: #4ea1ff;
+  --move: #63d69b;
+  --capture: #ff7a59;
+  --danger: #ff5c72;
+
+  --radius: 14px;
+  --tap: 48px;
+  --anim: 180ms;
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --anim: 0ms;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family:
+    'Calibri Light',
+    Calibri,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 16px;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--select);
+  outline-offset: 2px;
+}

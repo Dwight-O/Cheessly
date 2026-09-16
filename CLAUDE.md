@@ -1,0 +1,137 @@
+# King's Ladder — project guide
+
+A mobile-first PWA: a simplified, fast, endless chess-variant game. Capture the
+enemy king, climb the ladder, keep your hearts.
+
+## Commands
+
+| Command              | What it does                               |
+| -------------------- | ------------------------------------------ |
+| `npm run dev`        | Vite dev server                            |
+| `npm run build`      | Typecheck (`tsc -b`) then production build |
+| `npm run preview`    | Serve the production build locally         |
+| `npm test`           | Vitest, single run                         |
+| `npm run test:watch` | Vitest, watch mode                         |
+| `npm run lint`       | ESLint (flat config)                       |
+| `npm run format`     | Prettier write                             |
+
+Quality bar: `npm test`, `npm run lint` and `npm run build` must all pass, and
+the game must run with no console errors, before a phase is considered done.
+
+## Architecture
+
+| Path         | Rule                                                               |
+| ------------ | ------------------------------------------------------------------ |
+| `src/engine` | Pure rules engine. No React, no DOM, no randomness of its own.     |
+| `src/ai`     | Search and evaluation. Depends on the engine, never on the UI.     |
+| `src/levels` | Level definitions as **data** plus a generator and validator.      |
+| `src/state`  | Zustand stores + persistence. The bridge between UI and engine/AI. |
+| `src/ui`     | React components. Read state, dispatch actions. No rules logic.    |
+| `src/util`   | Seeded PRNG, localStorage wrapper. No app-specific logic.          |
+
+Dependency direction is one-way: `ui → state → {ai, levels} → engine → util`.
+
+## Decisions
+
+| Decision                 | Choice and reason                                                                                                                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Styling: **CSS Modules** | No extra build dependency or config; the board needs computed geometry (grid sized from the level's board size) which reads better as plain CSS with custom properties than as utility strings. Global tokens live in `src/ui/styles/global.css`. |
+| State: **Zustand**       | Small API, no provider tree, easy to read from a Web Worker callback.                                                                                                                                                                             |
+| Randomness               | `src/util/prng.ts` (mulberry32) only. `Math.random` is banned outside that file so every run is reproducible from a seed.                                                                                                                         |
+| Persistence              | `src/util/storage.ts` wraps every localStorage read/write in try/catch and returns a fallback. Storage failure must never crash the game.                                                                                                         |
+| Board coordinates        | `y = 0` is the **enemy** back rank (top of the screen), `y = height - 1` is the **player** back rank. Player pawns move toward `y = 0`.                                                                                                           |
+| Colours                  | `'w'` = player (always moves first), `'b'` = enemy/AI.                                                                                                                                                                                            |
+| PWA                      | `vite-plugin-pwa` in `generateSW` mode, `autoUpdate`. Icons are generated PNGs in `public/icons`.                                                                                                                                                 |
+| Deploy base path         | `VITE_BASE` env var so the same build works at a domain root (Vercel/Netlify) or under `/<repo>/` (GitHub Pages).                                                                                                                                 |
+
+## Game rules (authoritative summary)
+
+- Board is per-level, 4x4 up to 8x8.
+- King, Queen, Rook, Bishop, Knight move as in standard chess.
+- Pawns move one square forward (no double step, no en passant) and capture
+  diagonally forward. Reaching the far rank auto-promotes to a Queen.
+- **No check or checkmate.** A king may legally move onto an attacked square.
+- WIN: capture the enemy king. LOSS: your king is captured, or you have no
+  legal move on your turn.
+- Optional per-level move limit: reaching it with both kings alive is a DRAW,
+  and the player replays the level with no penalty.
+- Optional blocked squares: no piece may enter one, and sliders may not pass
+  through one. Knights may jump over them.
+- The player always moves first.
+
+## Progression
+
+- A run starts at level 1 with 3 hearts (more with meta upgrades, max 5).
+- Win → +1 level. Loss → −1 heart and −1 level, never below the last checkpoint.
+- Checkpoints every 5 levels (4 with the upgrade). Boss every 10 levels.
+- 0 hearts ends the run and awards Crowns based on the highest level reached.
+
+## Phase log
+
+- **Phase 9** — production build and docs. `VITE_BASE` sets the public path so
+  one build works at a domain root (Vercel/Netlify) or under `/<repo>/`
+  (GitHub Pages). `netlify.toml` and a manual-dispatch Pages workflow are in
+  the repository; README covers all three targets. Verified in a headless
+  browser: a scripted playthrough clears levels, loses hearts, drops levels and
+  keeps the HUD correct, and the app still renders with the network switched
+  off, with no console errors. Production bundle: 280 KB on disk, ~55 KB
+  gzipped for the main chunk plus a 6 KB AI worker.
+- **Phase 8** — polish. The moved piece is keyed by ply so React remounts it
+  and replays a 180 ms slide from its origin square; captures add a short ring
+  burst; `prefers-reduced-motion` disables both. Sound is synthesised with
+  WebAudio (no audio files to ship or cache) and starts only from a tap, since
+  browsers refuse an AudioContext before a gesture; haptics use
+  `navigator.vibrate`. Both channels fail silently and have mute toggles on the
+  Home screen. The three-step tutorial shows once and is recorded in the
+  profile. The service worker is registered from `main.tsx`.
+- **Phase 7** — meta upgrades. `state/upgrades.ts` holds the catalogue as data
+  (extra heart x2, extra knight, undo, closer checkpoints) plus the pure
+  purchase rules. Every upgrade carries an `allowancePerLevel` that is added to
+  the generator's enemy budget, which is how the ladder stays a climb after the
+  player has spent Crowns. Undo is deliberately a mis-tap fix, not a revive: it
+  is only available while the level is still in play.
+- **Phase 6** — daily challenge and share cards. `state/daily.ts` is pure:
+  the UTC date is the seed, the five levels come from the generator (never the
+  hand-tuned set, and never touched by meta upgrades) so everyone plays the
+  same boards, results are kept per date so one attempt cannot be retried, and
+  the streak advances only when the fifth level lands on a consecutive date.
+  `util/share.ts` builds both cards and shares via the Web Share API with a
+  clipboard fallback.
+- **Phase 5** — levels. `difficulty.ts` holds one function per lever (board
+  size, AI depth, mistake chance, move limit, move timer, blocked squares,
+  double-move modifier, enemy budget, player army, enemy piece pool) and is the
+  single source of the curve. `handTuned.ts` is levels 1-30 as board diagrams;
+  `generator.ts` covers 31+ by spending the enemy budget on a seeded board;
+  `validate.ts` gates every level (two kings, legal board size, no pawn on its
+  own promotion rank, the player has a move, and at least one player move
+  avoids losing the king on the reply). Warnings — winnable on move 1, or the
+  player starting under attack — make the generator retry. `getLevel` is the
+  only entry point and applies meta upgrades. The dev-only preview screen
+  (`DevScreen`, linked from Home in dev builds) plays any level on any seed.
+  Per-move timers arrived here too: expiry plays a random legal move.
+- **Phase 4** — progression. `src/state/run.ts` holds the pure run rules
+  (checkpoints at 1, 6, 11, ...; loss = -1 heart and -1 level but never below
+  the checkpoint; draw = free replay; Crowns = `level * 2 + 10 * floor(level/10)`).
+  `runStore` owns the run and the persisted profile, `flow.ts` co-ordinates the
+  run store, the game store and the screen router. Every save goes through the
+  try/catch storage wrapper, so blocked storage degrades to a session-only game.
+- **Phase 3** — AI. `src/ai/evaluate.ts` (material + 0.05/move mobility),
+  `src/ai/search.ts` (alpha-beta with iterative deepening, MVV-LVA ordering and
+  a hard 500 ms wall-clock cap), `src/ai/worker.ts` + `client.ts` (Web Worker
+  with a main-thread fallback and a 260 ms minimum "thinking" delay).
+  Search is written as explicit max/min rather than negamax because the
+  double-move modifier means the side to move does not always alternate.
+  Measured in this container: depth 4 from a full 8x8 start position is ~80 ms
+  and ~720 interior nodes, so depth 4 fits the 500 ms budget with headroom;
+  slower devices degrade automatically because only completed iterations count.
+- **Phase 2** — board UI. Squares are buttons with ARIA labels; pieces are SVG
+  tokens in an absolutely positioned layer (so phase 8 can animate them).
+  `src/state/gameStore.ts` holds selection and turn flow; `src/ai/client.ts` is
+  the seam the Web Worker slots into in phase 3. One hard-coded level.
+- **Phase 1** — rules engine (`src/engine`): board + ASCII parser, move
+  generation for all six pieces, blocked squares, promotion, win/loss/draw
+  resolution, the enemy double-move modifier. 53 unit tests.
+  Status precedence is: king captured > missing king > side to move has no
+  legal move (that side loses) > move limit reached (draw).
+- **Phase 0** — scaffold, lint/format/test tooling, PWA config, icons, seeded
+  PRNG, safe localStorage wrapper, this file.
