@@ -68,6 +68,14 @@ Dependency direction is one-way: `ui → state → {ai, levels} → engine → u
 
 ## Phase log
 
+- **Phase 9** — production build and docs. `VITE_BASE` sets the public path so
+  one build works at a domain root (Vercel/Netlify) or under `/<repo>/`
+  (GitHub Pages). `netlify.toml` and a manual-dispatch Pages workflow are in
+  the repository; README covers all three targets. Verified in a headless
+  browser: a scripted playthrough clears levels, loses hearts, drops levels and
+  keeps the HUD correct, and the app still renders with the network switched
+  off, with no console errors. Production bundle: 280 KB on disk, ~55 KB
+  gzipped for the main chunk plus a 6 KB AI worker.
 - **Phase 8** — polish. The moved piece is keyed by ply so React remounts it
   and replays a 180 ms slide from its origin square; captures add a short ring
   burst; `prefers-reduced-motion` disables both. Sound is synthesised with
